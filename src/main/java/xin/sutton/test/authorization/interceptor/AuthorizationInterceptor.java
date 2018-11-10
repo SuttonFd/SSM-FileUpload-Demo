@@ -60,18 +60,12 @@ public class AuthorizationInterceptor extends HandlerInterceptorAdapter {
     /**
      * 实现HandlerInterceptorAdapter抽象类
      * 1. public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception;
-     *
      * 2. public void postHandle(
      * 			HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView)
      * 			throws Exception;
-     *
-     *
-     *
      * 3. public void afterCompletion(
      * 			HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)
-     * 			throws Exception
-     *
-     *
+     * 			throws Exception;
      */
 
     /**

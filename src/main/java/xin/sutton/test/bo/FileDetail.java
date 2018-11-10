@@ -21,6 +21,6 @@ public class FileDetail {
     private String fileName;
     private String fileUrl;
     private String fileUploader;
-    private Date uploadTime;
+    private long uploadTime;
 
 }

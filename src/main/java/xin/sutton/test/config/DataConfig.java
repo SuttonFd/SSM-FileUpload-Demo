@@ -2,6 +2,8 @@ package xin.sutton.test.config;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInterceptor;
+import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.annotation.MapperScan;
@@ -67,23 +69,22 @@ public class DataConfig {
     }
 
     @Bean
-    public SqlSessionFactory sqlSessionFactory() throws Exception{
+    public SqlSessionFactory sqlSessionFactory(DruidDataSource ds,PageInterceptor pageInterceptor) throws Exception{
         SqlSessionFactoryBean sessionFactoryBean = new SqlSessionFactoryBean();
-        sessionFactoryBean.setDataSource(dataSource());
+        sessionFactoryBean.setDataSource(ds);
+        Interceptor[] plugins = {pageInterceptor};
+        sessionFactoryBean.setPlugins(plugins);
         return sessionFactoryBean.getObject();
     }
 
-    // 分页插件
     @Bean
-    public PageHelper pageHelper(){
-        PageHelper pageHelper = new PageHelper();
+    public PageInterceptor getPageInterceptor(){
+        PageInterceptor pageInterceptor = new PageInterceptor();
         Properties properties = new Properties();
-        properties.setProperty("dialect","mysql");
-        properties.setProperty("offsetAsPageNum","true");
-        properties.setProperty("rowBoundsWithCount","true");
-        properties.setProperty("reasonable","true");
-        properties.setProperty("pageSizeZero","true");
-        pageHelper.setProperties(properties);
-        return pageHelper;
+        properties.setProperty("value","true");
+        pageInterceptor.setProperties(properties);
+        return pageInterceptor;
     }
+
+
 }

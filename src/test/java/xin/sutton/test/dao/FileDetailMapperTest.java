@@ -10,7 +10,10 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import xin.sutton.test.bo.FileDetail;
 import xin.sutton.test.config.RootConfig;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -41,21 +44,19 @@ public class FileDetailMapperTest {
     @Test
     public void getFileDetails() {
         List<FileDetail> fileDetails = fileDetailMapper.getFileDetails();
-        Assert.assertEquals(2,fileDetails.size());
+        System.out.println(fileDetails.get(1).getUploadTime());
     }
 
+
     @Test
-    public void batchInsertTest() {
-        List<FileDetail> fileDetails = new ArrayList<FileDetail>();
-        for(int i=0;i<3;i++){
-            FileDetail fileDetail = FileDetail.builder()
-                    .fileName("dog.jpg")
-                    .fileUrl("http://120.77.180.199:8090/img/dog.jpg")
-                    .fileUploader("勺子")
-                    .build();
-            fileDetails.add(fileDetail);
+    public void selectBetweenDateTest(){
+        try{
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            List<FileDetail> fileDetails = fileDetailMapper.selectBetweenDate(df.parse("2018-11-07").getTime(),df.parse("2018-11-10").getTime(),null);
+            System.out.println(fileDetails.get(0).getId());
+        }catch (Exception e){
+            e.printStackTrace();
         }
-        fileDetailMapper.batchInsert(fileDetails);
     }
 
 }

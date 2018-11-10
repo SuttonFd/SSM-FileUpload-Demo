@@ -1,9 +1,11 @@
 package xin.sutton.test.controller;
 
+import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import xin.sutton.test.authorization.annotation.Authorization;
@@ -16,6 +18,8 @@ import xin.sutton.test.vo.ServerResponse;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -49,10 +53,44 @@ public class FileController {
         String fileUrl = url + "/" + sb.toString();
         file.transferTo(new File(fileUrl));
 
-        FileDetail detail = FileDetail.builder().fileName(filename).fileUrl("http://localhost:8888/upload/"+sb.toString()).fileUploader(user.getNickname()).build();
+        FileDetail detail = FileDetail.builder()
+                .fileName(filename)
+                .fileUrl("http://localhost:8888/upload/"+sb.toString())
+                .fileUploader(user.getNickname())
+                .uploadTime(new Date().getTime())
+                .build();
+        System.out.println(new SimpleDateFormat("yyyy-MM-dd").format(new Date().getTime()));
         fileService.insertFileDetail(detail);
 
         return ServerResponse.createByErrorMessage("上传成功");
+    }
+
+    @RequestMapping("/picList")
+    public ServerResponse getPicList(Integer pageNum,Integer pageSize){
+        PageInfo<FileDetail> pageInfo = fileService.getPicList(pageNum, pageSize);
+        return ServerResponse.createBySuccess(pageInfo);
+    }
+
+    @RequestMapping("/searchList")
+    public ServerResponse searchList(Integer pageNum,Integer pageSize,String beginDate,String endDate,String nickname){
+        long beginTime = 0,endTime = 0;
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        try{
+            if(StringUtils.isEmpty(beginDate)){
+                beginTime = df.parse("2018-01-01").getTime();
+            }else{
+                beginTime = df.parse(beginDate).getTime();
+            }
+            if(StringUtils.isEmpty(endDate)){
+                endTime = new Date().getTime();
+            }else{
+                endTime = df.parse(endDate).getTime() + (1000 * 60 * 60 * 24);
+            }
+        } catch(Exception e) {
+            return ServerResponse.createByErrorMessage("参数错误");
+        }
+        PageInfo<FileDetail> pageInfo = fileService.searchByDateAndNickname(beginTime,endTime,"%"+nickname+"%",pageNum,pageSize);
+        return ServerResponse.createBySuccess(pageInfo);
     }
 
     @GetMapping("/allPic")

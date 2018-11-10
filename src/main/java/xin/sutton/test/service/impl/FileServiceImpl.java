@@ -1,5 +1,7 @@
 package xin.sutton.test.service.impl;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,7 +40,6 @@ public class FileServiceImpl implements FileService {
     }
 
     public ResponseEntity<ServerResponse<FileDetail>> getFileDetail(int id) {
-
         return new ResponseEntity<>(ServerResponse.createBySuccess(fileDetailMapper.getFileDetail(id)), HttpStatus.OK);
     }
 
@@ -49,5 +50,21 @@ public class FileServiceImpl implements FileService {
 
     public List<FileDetail> getAllFileDetails() {
         return fileDetailMapper.getFileDetails();
+    }
+
+    public PageInfo<FileDetail> getPicList(Integer pageNum,Integer pageSize){
+        PageHelper.startPage(pageNum,pageSize);
+        List<FileDetail> list = fileDetailMapper.getFileDetails();
+        PageInfo<FileDetail> pageInfo = new PageInfo<>(list);
+        return pageInfo;
+    }
+
+    public PageInfo<FileDetail> searchByDateAndNickname(long beginTime,long endTime,String nickname,Integer pageNum,Integer pageSize){
+        PageHelper.startPage(pageNum,pageSize);
+        List<FileDetail> list = fileDetailMapper.selectBetweenDate(beginTime,endTime,nickname);
+
+
+        PageInfo<FileDetail> pageInfo = new PageInfo<>(list);
+        return pageInfo;
     }
 }
