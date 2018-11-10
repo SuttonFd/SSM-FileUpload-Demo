@@ -1,7 +1,6 @@
 *.class
 
 # package file
-
 *.war
 *.ear
 
@@ -10,6 +9,10 @@
 
 # maven ignore
 target/
+
+# maven extract
+.extract/
+/extract/
 
 # eclipse ignore
 .settings/

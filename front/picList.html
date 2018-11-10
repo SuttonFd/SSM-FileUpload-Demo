@@ -1,167 +1,232 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta charset="utf-8" />
-		<title>图片列表</title>
-		<link rel="stylesheet" href="css/bootstrap.min.css" />
-		<script type="text/javascript" src="js/jquery-3.2.1.min.js" ></script>
-		<script type="text/javascript" src="js/bootstrap.min.js" ></script>
-		<script type="text/javascript" src="js/bootstrap-paginator.js" ></script>
-		<script type="text/javascript">
-		    $(function(){
-		    	pageStart();
-		    })
-		    
-		    function btnDetail(id){
-		    	$.ajax({
-		    		type:"get",
-		    		url:"http://127.0.0.1:8888/file/detail/"+id,
-		    		async:true,
-		    		dataType:"json",
-		    		contentType:"application/json; charset=utf-8",
-		    		success:function(data){
-						$("#title").text(data.data.fileName);
-						$("#img").html("<img height='150px' width='150px' src='"+ data.data.fileUrl +"'></img>");
-						$("#uploader").text(data.data.fileUploader);
-		    		}
-		    	});
-		    }
-		    
-		    function pageStart() {
-		    	$.ajax({
-		    		type:"get",
-		    		url:"http://127.0.0.1:8888/file/allPic",
-		    		async:true,
-		    		data:{pageNum:1,pageSize:5},
-		    		dataType:"json",
-		    		contentType:"application/json; charset=utf-8",
-					success:function(data) {
-						console.log(data.list);
-						var tbody="<thead><tr class='success'><th>Id</th><th>文件名称</th><th>图片地址</th><th>上传者</th><th>上传时间</th><th>操作</th></tr></thead><tbody>";
-						$.each(data.list, function(index, item) {
-							var trs="";
-							trs += "<tr><td>" + item.id + "</td><td>"+item.fileName+"</td><td>"+item.fileUrl+"</td><td>"+item.fileUploader+"</td><td>"+item.uploadTime+"</td><td><button type='button' data-toggle='modal' data-target='#myModal' class='btn btn-primary' onclick='btnDetail("+ item.id +")'>查看详情</button></td></tr>";
-							tbody += trs;
-						});
-						tbody += "</tbody>"
-						$("#dataTable").html(tbody);
-			            var options = {
-	                        bootstrapMajorVersion:3, //bootstrap的版本要求
-	                        currentPage:data.currentPage,//当前页数
-	                        totalPages:data.pageCount,//总页数
-	                        numberOfPages:5,//每页记录数
-	                        itemTexts : function(type, page, current) {//设置分页按钮显示字体样式
-	                            switch (type) {
-		                            case "first":
-		                                return "首页";
-		                            case "prev":
-		                                return "上一页";
-		                            case "next":
-		                                return "下一页";
-		                            case "last":
-		                                return "末页";
-		                            case "page":
-		                                return page;
-	                            }
-	                        },
-	                        onPageClicked:function(event,originalEvent,type,page){//分页按钮点击事件
-	                            $.ajax({//根据page去后台加载数据
-	                                url:"http://127.0.0.1:8888/file/allPic",
-	                                type:"get",
-	                                dataType:"json",
-	                                data:{"pageNum":page,pageSize:5},
-	                                success:function(data){
-	                                    var tbody1="<thead><tr class='success'><th>Id</th><th>文件名称</th><th>图片地址</th><th>上传者</th><th>上传时间</th><th>操作</th></tr></thead><tbody>";
-										$.each(data.list, function(index, item) {
-											var trs="";
-											trs += "<tr><td>" + item.id + "</td><td>"+item.fileName+"</td><td>"+item.fileUrl+"</td><td>"+item.fileUploader+"</td><td>"+item.uploadTime+"</td><td><button type='button' data-toggle='modal' data-target='#myModal' class='btn btn-primary' onclick='btnDetail("+ item.id +")'>查看详情</button></td></tr>";
-											tbody1 += trs;
-										});
-										tbody1 += "</tbody>"
-										$("#dataTable").html(tbody1);
-	                                }
-	                            })
-	                        }
-	                    }
-						$("#pagination").bootstrapPaginator(options);
-					}
-		    	});
-		    }
-		    
-			function toAdd(){
-				window.location.href = './index.html';
-			}
-			
-			function logout(){
-				$.ajax({
-					type:"get",
-					url:"http://127.0.0.1:8888/user/logout",
-					async:true,
-					dataType:'json',
-					contentType:"application/json; charset=utf-8",
-					headers:{
-						authorization: localStorage.getItem("userInfo")
-					},
-					success:function(data){
-						window.location.href = "./login.html";
-					},
-					error: function(data){
-						console.log(data);
-					}
-				});
-			}
-		</script>
-	</head>
-	<body>
-		<div class="container">
-			<div class="row">
-				<h3>图片列表</h3>
+<head>
+	<meta charset="utf-8" />
+	<title>图片列表</title>
+	<link rel="stylesheet" href="css/bootstrap.min.css" />
+	<script type="text/javascript" src="js/jquery-3.2.1.min.js" ></script>
+	<script type="text/javascript" src="js/bootstrap.min.js" ></script>
+	<script type="text/javascript" src="js/bootstrap-paginator.js" ></script>
+	<script type="text/javascript" src="laydate/laydate.js"></script>
+	<script type="text/javascript">
+        laydate.render({
+            elem: '#selectBeginDay' //指定元素
+        });
+        laydate.render({
+            elem: '#selectEndDay' //指定元素
+        });
+        $(function(){
+            pageStart();
+        })
+
+
+        function timestampFormat(timeStr){
+            var date = new Date(timeStr);
+            var year = date.getFullYear() + '-';
+            var month = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '-';
+
+            var day = (date.getDate() < 10 ? '0'+ date.getDate() : date.getDate()) + ' ';
+            var hour = date.getHours() + ':';
+            var minute = (date.getMinutes() < 10 ? '0'+ date.getMinutes() : date.getMinutes()) + ':';
+            var second = date.getSeconds() < 10 ? '0'+ date.getSeconds() : date.getSeconds();
+            return year+month+day+hour+minute+second;
+        }
+
+        function btnDetail(id){
+            $.ajax({
+                type:"get",
+                url:"http://127.0.0.1:8888/file/detail/"+id,
+                async:true,
+                dataType:"json",
+                contentType:"application/json; charset=utf-8",
+                success:function(data){
+                    $("#title").text(data.data.fileName);
+                    $("#img").html("<img height='150px' width='150px' src='"+ data.data.fileUrl +"'></img>");
+                    $("#uploader").text(data.data.fileUploader);
+                }
+            });
+        }
+
+        function render(data){
+            var tbody="<thead><tr class='success'><th>Id</th><th>文件名称</th><th>图片地址</th><th>上传者</th><th>上传时间</th><th>操作</th></tr></thead><tbody>";
+            $.each(data.data.list, function(index, item) {
+                var trs="";
+                trs += "<tr><td>" + item.id + "</td><td>"+item.fileName+"</td><td>"+item.fileUrl+"</td><td>"+item.fileUploader+"</td><td>"+timestampFormat(item.uploadTime)+"</td><td><button type='button' data-toggle='modal' data-target='#myModal' class='btn btn-primary' onclick='btnDetail("+ item.id +")'>查看详情</button></td></tr>";
+                tbody += trs;
+            });
+            tbody += "</tbody>"
+            $("#dataTable").html(tbody);
+            var options = {
+                bootstrapMajorVersion:3, //bootstrap的版本要求
+                currentPage:data.data.pageNum,//当前页数
+                totalPages:data.data.lastPage,//总页数
+                numberOfPages:data.data.pageSize,//每页记录数
+                itemTexts : function(type, page, current) {//设置分页按钮显示字体样式
+                    switch (type) {
+                        case "first":
+                            return "<<";
+                        case "prev":
+                            return "<";
+                        case "next":
+                            return ">";
+                        case "last":
+                            return ">>";
+                        case "page":
+                            return page;
+                    }
+                },
+                onPageClicked:function(event,originalEvent,type,page){//分页按钮点击事件
+                    $.ajax({//根据page去后台加载数据
+                        url:"http://127.0.0.1:8888/file/picList",
+                        type:"get",
+                        dataType:"json",
+                        data:{"pageNum":page,pageSize:5},
+                        success:function(data){
+                            var tbody1="<thead><tr class='success'><th>Id</th><th>文件名称</th><th>图片地址</th><th>上传者</th><th>上传时间</th><th>操作</th></tr></thead><tbody>";
+                            $.each(data.data.list, function(index, item) {
+                                var trs="";
+                                trs += "<tr><td>" + item.id + "</td><td>"+item.fileName+"</td><td>"+item.fileUrl+"</td><td>"+item.fileUploader+"</td><td>"+timestampFormat(item.uploadTime)+"</td><td><button type='button' data-toggle='modal' data-target='#myModal' class='btn btn-primary' onclick='btnDetail("+ item.id +")'>查看详情</button></td></tr>";
+                                tbody1 += trs;
+                            });
+                            tbody1 += "</tbody>"
+                            $("#dataTable").html(tbody1);
+                        }
+                    })
+                }
+            }
+            $("#pagination").bootstrapPaginator(options);
+        }
+
+        function pageStart() {
+            $.ajax({
+                type:"get",
+                url:"http://127.0.0.1:8888/file/picList",
+                async:true,
+                data:{pageNum:1,pageSize:5},
+                dataType:"json",
+                contentType:"application/json; charset=utf-8",
+                success:function(data) {
+                    render(data);
+                }
+            });
+        }
+
+        function toAdd(){
+            window.location.href = './index.html';
+        }
+
+        function logout(){
+            $.ajax({
+                type:"get",
+                url:"http://127.0.0.1:8888/user/logout",
+                async:true,
+                dataType:'json',
+                contentType:"application/json; charset=utf-8",
+                headers:{
+                    authorization: localStorage.getItem("userInfo")
+                },
+                success:function(data){
+                    window.location.href = "./login.html";
+                },
+                error: function(data){
+                    console.log(data);
+                }
+            });
+        }
+
+        function select(){
+            $.ajax({
+                type: "get",
+                url: "http://localhost:8888/file/searchList",
+                async: true,
+                data:{pageNum:1,pageSize:5,nickname:$("#selectNickname").val(),beginDate:$("#selectBeginDay").val(),endDate:$("#selectEndDay").val()},
+                dataType:'json',
+                contentType:"application/json; charset=utf-8",
+                success: function(data){
+                    render(data);
+                }
+            });
+        }
+	</script>
+	<style type="text/css">
+		.selectButton{
+			background-color: #1BA784;
+		}
+		.selectButton:hover{
+			background-color: #57C3C2;
+		}
+	</style>
+</head>
+<body>
+
+<div class="container">
+	<div class="row">
+		<h3>图片列表</h3>
+	</div>
+	<div class="row">
+		<div class="col-lg-2">
+			<input type="text" class="form-control" placeholder="例如：'勺子'" id="selectNickname"/>
+		</div>
+		<div class="col-lg-9">
+			<div class="col-lg-1">
+				<label>选择日期</label>
 			</div>
-			<div class="row">
-				<div class="col-md-4 col-md-offset-8">
-					<button type="button" class="btn btn-primary" onclick="toAdd()">添加</button>
-					<button type="button" class="btn btn-primary" onclick="logout()">退出当前用户</button>
+			<div class="col-lg-4">
+				<input type="text" class="demo-input form-control" placeholder="请选择起始日期" id="selectBeginDay">
+			</div>
+			<div class="col-lg-4">
+				<input type="text" class="demo-input form-control" placeholder="请选择结束日期" id="selectEndDay">
+			</div>
+		</div>
+		<div class="col-lg-1">
+			<button type="button" class="btn btn-default selectButton" onclick="select()">查询</button>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-4 col-md-offset-8">
+			<button type="button" class="btn btn-primary" onclick="toAdd()">添加</button>
+			<button type="button" class="btn btn-primary" onclick="logout()">退出当前用户</button>
+		</div>
+	</div>
+	<div class="row">
+		<table class="table table-striped"  id="dataTable" ></table>
+	</div>
+	<div class="row">
+		<ul id="pagination"></ul>
+	</div>
+</div>
+<!-- 模态框（Modal） -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+					&times;
+				</button>
+				<h4 class="modal-title" id="myModalLabel">
+					详情
+				</h4>
+			</div>
+			<div class="modal-body">
+				<div class="row">
+					<div class="col-md-4">标题</div>
+					<div class="col-md-4"><span id="title"></span></div>
+				</div>
+				<div class="row">
+					<div class="col-md-4">图片</div>
+					<div class="col-md-4"><span id="img"></span></div>
+				</div>
+				<div class="row">
+					<div class="col-md-4">上传者</div>
+					<div class="col-md-4"><span id="uploader"></span></div>
 				</div>
 			</div>
-			<div class="row">
-				<table class="table table-striped"  id="dataTable" ></table>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">关闭
+				</button>
 			</div>
-			<div class="row">
-				<ul id="pagination"></ul>
-			</div>
-		</div>
-		<!-- 模态框（Modal） -->
-		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-			<div class="modal-dialog">
-				<div class="modal-content">
-					<div class="modal-header">
-						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-							&times;
-						</button>
-						<h4 class="modal-title" id="myModalLabel">
-							详情
-						</h4>
-					</div>
-					<div class="modal-body">
-						<div class="row">
-							<div class="col-md-4">标题</div>
-							<div class="col-md-4"><span id="title"></span></div>
-						</div>
-						<div class="row">
-							<div class="col-md-4">图片</div>
-							<div class="col-md-4"><span id="img"></span></div>	
-						</div>
-						<div class="row">
-							<div class="col-md-4">上传者</div>
-							<div class="col-md-4"><span id="uploader"></span></div>
-						</div>
-					</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-default" data-dismiss="modal">关闭
-						</button>
-					</div>
-				</div><!-- /.modal-content -->
-			</div><!-- /.modal -->
-		</div>
-	</body>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal -->
+</div>
+</body>
 </html>

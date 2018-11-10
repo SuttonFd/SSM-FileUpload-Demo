@@ -17,7 +17,7 @@
 </head>
 <body>
 <div class="container kv-main">
-    
+
     <form enctype="multipart/form-data">
         <br>
         <div class="file-loading">
@@ -30,24 +30,24 @@
 </body>
 <script>
     $('#fileInput').fileinput({
-    	uploadUrl:"http://localhost:8888/file/uploadFile",
-    	uploadAsync: true, // 异步上传
-    	language: "zh", // 设置语言
-    	showCaption: true, // 是否显示标题
-    	showUpload: true, // 是否显示上传按钮
-    	showRemove: true, // 显示移除按钮
-    	showPreview: true, // 显示预览按钮
-    	browseClass: "btn btn-primary", // 按钮样式
-    	allowedFileExtensions: ["jpg","png","gif"],
-    	maxFileCount:4, // 最大同时上传图片数量
-    	enctype:'multipart/form-data',
-    	ajaxSettings: { headers: { 'authorization': localStorage.getItem("userInfo") } },  // 添加token的鉴权请求头
-    	validateInitialCount:true,
-    	msgFilesTooMany: "选择上传的文件数量({n})超过允许的最大数量({m})",
+        uploadUrl:"http://localhost:8888/file/uploadFile",
+        uploadAsync: true, // 异步上传
+        language: "zh", // 设置语言
+        showCaption: true, // 是否显示标题
+        showUpload: true, // 是否显示上传按钮
+        showRemove: true, // 显示移除按钮
+        showPreview: true, // 显示预览按钮
+        browseClass: "btn btn-primary", // 按钮样式
+        allowedFileExtensions: ["jpg","png","gif"],
+        maxFileCount:4, // 最大同时上传图片数量
+        enctype:'multipart/form-data',
+        ajaxSettings: { headers: { 'authorization': localStorage.getItem("userInfo") } },  // 添加token的鉴权请求头
+        validateInitialCount:true,
+        msgFilesTooMany: "选择上传的文件数量({n})超过允许的最大数量({m})",
     });
-    
-	function returnBack(){
-		window.location.href = "./picList.html";
-	}
+
+    function returnBack(){
+        window.location.href = "./picList.html";
+    }
 </script>
 </html>
